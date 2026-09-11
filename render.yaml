@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: duanemaas-portal
+    runtime: node
+    plan: free
+    branch: client-portal
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production

@@ -1,11 +1,14 @@
-process.loadEnvFile();
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+
+// Local dev reads .env from the project folder; Render mounts it as a secret file in /etc/secrets.
+const ENV_FILE = [path.join(__dirname, '.env'), '/etc/secrets/.env'].find(file => fs.existsSync(file));
+if (ENV_FILE) process.loadEnvFile(ENV_FILE);
+
 const auth = require('./auth');
 
-const { PORT = 3000, SITE_USERNAME, SITE_PASSWORD_HASH, NODE_ENV } = process.env;
+const { PORT = 3000, SITE_USERNAME, SITE_PASSWORD_HASH, NODE_ENV, RENDER } = process.env;
 const SESSION_COOKIE = 'session';
 const SECURE_COOKIE = NODE_ENV === 'production';
 
@@ -153,8 +156,14 @@ function readForm(req) {
   });
 }
 
+// On Render every request arrives via Cloudflare, which overwrites True-Client-IP with the real visitor
+// address. Elsewhere the header could be forged, so only the socket address is trusted.
+function clientIp(req) {
+  return (RENDER && req.headers['true-client-ip']) || req.socket.remoteAddress;
+}
+
 async function handleLogin(req, res) {
-  const ip = req.socket.remoteAddress;
+  const ip = clientIp(req);
   let form;
   try {
     form = await readForm(req);
