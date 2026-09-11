@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raynor Courses - Duane Maas Security Consulting</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <span class="logo">Duane Maas Security Consulting</span>
+      <nav>
+        <a href="index.html#about">About</a>
+        <a href="index.html#projects">What I Do</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="portal.html">Portal</a>
+        <a href="courses.html">Courses</a>
+        <a href="surveys.html">Surveys</a>
+        <form class="logout-form" method="post" action="/logout"><button class="link-button" type="submit">Log out</button></form>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section portal">
+    <h2>Raynor Society Courses</h2>
+    <p class="portal-sub">Golf courses from the Raynor_Society FileMaker file.</p>
+
+    <div id="status" class="portal-status"></div>
+
+    <div class="table-wrap">
+      <table id="courses-table">
+        <thead>
+          <tr>
+            <th>Course Name</th>
+            <th>City</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Duane Maas Security Consulting. Built with Claude Code.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="courses.js"></script>
+</body>
+</html>

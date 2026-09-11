@@ -1,0 +1,159 @@
+.portal {
+  max-width: 1100px;
+}
+
+.logo {
+  color: var(--text);
+}
+
+.logout-form {
+  display: inline;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: 24px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--accent);
+}
+
+.login-card {
+  max-width: 380px;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+}
+
+.login-card h2 {
+  margin-top: 0;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.login-card input {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  margin-bottom: 16px;
+}
+
+.login-card input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.login-card .btn {
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.portal-sub {
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0 16px;
+}
+
+.tab-btn {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.portal-status {
+  color: var(--muted);
+  font-size: 0.9rem;
+  min-height: 1.4em;
+  margin-bottom: 8px;
+}
+
+.portal-status.error {
+  color: #c0392b;
+}
+
+.portal-status.snapshot {
+  color: #9a6700;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+thead {
+  background: var(--card-bg);
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+th.num, td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+tbody tr:hover {
+  background: var(--card-bg);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}

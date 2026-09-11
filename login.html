@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In - Duane Maas Security Consulting</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="index.html">Duane Maas Security Consulting</a>
+      <nav>
+        <a href="index.html#about">About</a>
+        <a href="index.html#projects">What I Do</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section login">
+    <div class="login-card">
+      <h2>Client Login</h2>
+      <p id="login-error" class="portal-status error" hidden></p>
+      <form method="post" action="/login">
+        <input type="hidden" name="next" id="next">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn" type="submit">Log in</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Duane Maas Security Consulting. Built with Claude Code.</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>
