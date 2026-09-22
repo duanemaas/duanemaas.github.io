@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="False"/>
+    <Option state="False"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="29" name="Answers"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="Survey" id="1" name="SurveyID"/>
+          <Text>$$SurveyID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="39" name="Sort Records">
+    <NoInteract state="True"/>
+    <Restore state="True"/>
+    <SortList BlanksLast="False" Maintain="True" value="True">
+      <Sort type="Ascending">
+        <PrimaryField>
+          <Field table="Answers" id="8" name="QuestionNumber"/>
+        </PrimaryField>
+      </Sort>
+    </SortList>
+  </Step>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="True"/>
+    <RowPageLocation value="First"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Retrieve Recommendations</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Create List of Recommendations - plain text and HTML together</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$Recommend</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$itemsHTML</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Skip answers with a score of 4 - they need no improvement</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetAsNumber ( Answers::Score ) <> 4]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$$Recommend &"¶"&
+"• "&Answers::Question&"¶"&
+"    You answered: "&
+Answers::Response&"¶"&
+"         Recommendation: "&
+Answers::Recommendation&"¶"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$Recommend</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  q = Substitute ( Answers::Question ; ["&" ; "&amp;"] ; ["<" ; "&lt;"] ; [">" ; "&gt;"] ) ;
+  a = Substitute ( Answers::Response ; ["&" ; "&amp;"] ; ["<" ; "&lt;"] ; [">" ; "&gt;"] ) ;
+  r = Substitute ( Answers::Recommendation ; ["&" ; "&amp;"] ; ["<" ; "&lt;"] ; [">" ; "&gt;"] )
+] ;
+$itemsHTML &
+"<tr><td style='padding:14px 0;border-bottom:1px solid #e5e7eb;'>" & ¶ &
+"<div style='font-weight:bold;color:#111827;'>" & q & "</div>" & ¶ &
+"<div style='color:#4b5563;margin-top:4px;'>You answered: " & a & "</div>" & ¶ &
+"<div style='color:#1d4ed8;margin-top:4px;'><b>Recommendation:</b> " & r & "</div>" & ¶ &
+"</td></tr>" & ¶
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$itemsHTML</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="True"/>
+    <Exit state="True"/>
+    <RowPageLocation value="Next"/>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Every answer scored 4 - say so instead of sending an empty list</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $$Recommend )]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["¶" & "No improvement items - you received the top score on every question." & "¶"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$Recommend</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["<tr><td style='padding:14px 0;color:#15803d;font-weight:bold;'>No improvement items - you received the top score on every question.</td></tr>" & ¶]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$itemsHTML</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$$Recommend]]></Calculation>
+    <Field table="Survey" id="15" name="Recommendations"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Set up Scoring for Exam</Text>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$$TotalScore]]></Calculation>
+    <Field table="Survey" id="13" name="TotalScore"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[Get ( CurrentTimestamp )]]></Calculation>
+    <Field table="Survey" id="10" name="CompleteDateTime"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA["Completed"]]></Calculation>
+    <Field table="Survey" id="11" name="Status"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[Case ( $$TotalScore <=17 ; "F";
+$$TotalScore<=25  ; "D";
+$$TotalScore <=30  ; "C";
+$$TotalScore <=34 ; "B";
+$$TotalScore <=38  ; "A";
+"A+" )]]></Calculation>
+    <Field table="Survey" id="14" name="ReadinessLevel"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Create Header and Footer for the plain-text part of the email</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["Survey Results"&"¶¶"&
+
+"You received a score of "&Survey::TotalScore &" out of 40 possible points and a grade of "&Survey::ReadinessLevel&"¶¶"&
+
+"A list of suggested improvement items is listed below:"&"¶¶"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$SurveyHeader</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["¶¶"&
+
+"To learn more about building strong security policies, read our blog post: https://www.mcservices.com/cybersecurity-policies-part-1/"&"¶¶"&
+
+"MC Services would love to help you with your organization's cybersecurity."&"¶¶"&
+
+"Call (800) 453-8106, email us at info@mcservices.com, or visit our web site at https://mcservices.com"&"¶¶"&
+
+"To book a time to talk, go to https://calendly.com/duanemaas"&"¶¶"&
+
+"Have a wonderful day from the team at MC Services"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$SurveyFooter</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$$SurveyHeader&
+Survey::Recommendations&
+$$SurveyFooter]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$EmailBody</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Check for Phone formatting</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$$Platform="Phone"]]></Calculation>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="35" name="Survey Results Phone"/>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="32" name="Survey Results"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="80" name="Refresh Window">
+    <Option state="False"/>
+    <FlushSQLData state="False"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Send the email on the server - the server session cannot see this session's $$ variables, so pass everything in the parameter</Text>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="False"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "to" ; $$Email ; JSONString ] ;
+  [ "textBody" ; $$EmailBody ; JSONString ] ;
+  [ "itemsHTML" ; $itemsHTML ; JSONString ] ;
+  [ "score" ; Survey::TotalScore ; JSONString ] ;
+  [ "grade" ; Survey::ReadinessLevel ; JSONString ]
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$emailParam</Name>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="164" name="Perform Script on Server">
+    <WaitForCompletion state="True"/>
+    <Calculation><![CDATA[$emailParam]]></Calculation>
+    <Script id="1" name="Send Survey Email"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( LastError )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$serverError</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( ScriptResult )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$sendResult</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$serverError <> 0 or JSONGetElement ( $sendResult ; "ok" ) <> 1]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Survey email failed"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA[Case (
+  $serverError <> 0 ; "Could not run Send Survey Email on the server (FileMaker error " & $serverError & ")." ;
+  IsEmpty ( $sendResult ) ; "The server script finished without returning a result." ;
+  JSONGetElement ( $sendResult ; "error" ) & ¶ & JSONGetElement ( $sendResult ; "detail" )
+)]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+</fmxmlsnippet>

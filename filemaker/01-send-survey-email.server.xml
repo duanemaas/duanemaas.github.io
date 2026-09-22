@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PURPOSE: Build and send the survey results email. Runs on FileMaker Server via Perform Script on Server.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PARAMETER (JSON): to, textBody, itemsHTML, score, grade</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>RESULT (JSON): ok = 1 on success, or ok = 0 with error and detail</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>The server session has no $$ variables from the user's session - everything it needs arrives in the parameter or comes from _globals</Text>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( ScriptParameter )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$param</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $param ; "textBody" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$textBody</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $param ; "itemsHTML" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$itemsHTML</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $param ; "score" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$score</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Build the HTML part of the email</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $param ; "grade" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$grade</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Case (
+  $grade = "A+" ; "#15803d" ;
+  $grade = "A"  ; "#16a34a" ;
+  $grade = "B"  ; "#65a30d" ;
+  $grade = "C"  ; "#d97706" ;
+  $grade = "D"  ; "#dc2626" ;
+  "#991b1b"
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$gradeColor</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Logo from _globals::Logo - embedded in the email so mail apps show it without loading remote images</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[not IsEmpty ( _globals::Logo )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$hasLogo</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let (
+  fn = GetContainerAttribute ( _globals::Logo ; "filename" ) ;
+  Lower ( RightWords ( Substitute ( fn ; "." ; " " ) ; 1 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$logoExt</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Case (
+  $logoExt = "jpg" or $logoExt = "jpeg" ; "image/jpeg" ;
+  $logoExt = "gif" ; "image/gif" ;
+  "image/png"
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$logoMime</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["logo." & If ( IsEmpty ( $logoExt ) ; "png" ; $logoExt )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$logoFile</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Base64 in 76-character lines, as email requires</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[If ( $hasLogo ;
+  While (
+    [ s = Base64EncodeRFC ( 4648 ; _globals::Logo ) ; out = "" ] ;
+    Length ( s ) > 0 ;
+    [ out = out & Left ( s ; 76 ) & ¶ ; s = Middle ( s ; 77 ; Length ( s ) ) ] ;
+    out
+  ) ;
+  ""
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$logoBase64</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Logo row for the HTML - shown at up to 180 pixels wide, keeping its proportions</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[If ( $hasLogo ;
+  Let ( [
+    w = GetAsNumber ( GetContainerAttribute ( _globals::Logo ; "width" ) ) ;
+    h = GetAsNumber ( GetContainerAttribute ( _globals::Logo ; "height" ) ) ;
+    dispW = If ( w > 0 ; Min ( 180 ; w ) ; 180 ) ;
+    dispH = If ( w > 0 and h > 0 ; Round ( dispW * h / w ; 0 ) ; 0 )
+  ] ;
+    "<tr><td style='padding:20px 32px;background:#ffffff;'>" &
+    "<img src='cid:mcslogo' alt='MC Services' width='" & dispW & "'" &
+    If ( dispH > 0 ; " height='" & dispH & "'" ; "" ) &
+    " style='display:block;border:0;'></td></tr>" & ¶
+  ) ;
+  ""
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$logoRow</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["<html><body style='margin:0;background:#f3f4f6;'>" & ¶ &
+"<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#f3f4f6;padding:24px 0;'><tr><td align='center'>" & ¶ &
+"<table role='presentation' width='600' cellpadding='0' cellspacing='0' style='max-width:600px;width:100%;background:#ffffff;font-family:Arial,Helvetica,sans-serif;'>" & ¶ &
+$logoRow &
+"<tr><td style='background:#0f2a4a;color:#ffffff;padding:24px 32px;font-size:22px;font-weight:bold;'>Survey Results</td></tr>" & ¶ &
+"<tr><td style='padding:24px 32px 8px 32px;font-size:16px;color:#111827;'>You received a score of <b>" & $score & "</b> out of <b>40</b> possible points and a grade of " &
+"<span style='background:" & $gradeColor & ";color:#ffffff;font-weight:bold;padding:2px 10px;'>" & $grade & "</span></td></tr>" & ¶ &
+"<tr><td style='padding:16px 32px 0 32px;font-size:15px;color:#374151;'>A list of suggested improvement items is listed below:</td></tr>" & ¶ &
+"<tr><td style='padding:0 32px;'><table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='font-size:14px;'>" & ¶ &
+$itemsHTML &
+"</table></td></tr>" & ¶ &
+"<tr><td style='padding:24px 32px;font-size:15px;color:#111827;'>" & ¶ &
+"<p style='background:#eff6ff;border-left:4px solid #1d4ed8;padding:12px 16px;margin:0 0 20px 0;'>To learn more about building strong security policies, read our blog post <a href='https://www.mcservices.com/cybersecurity-policies-part-1/' style='color:#1d4ed8;font-weight:bold;'>Cybersecurity Policies, Part 1</a>.</p>" & ¶ &
+"<p><b>MC Services would love to help you with your organization's cybersecurity.</b></p>" & ¶ &
+"<p>Call (800) 453-8106, email us at <a href='mailto:info@mcservices.com'>info@mcservices.com</a>, or visit <a href='https://mcservices.com'>mcservices.com</a></p>" & ¶ &
+"<p><a href='https://calendly.com/duanemaas' style='display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 24px;'>Book a time to talk</a></p>" & ¶ &
+"</td></tr>" & ¶ &
+"<tr><td style='padding:16px 32px 24px 32px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;'>Have a wonderful day from the team at MC Services</td></tr>" & ¶ &
+"</table></td></tr></table></body></html>"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$html</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Mail settings - read from the _globals table</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[_globals::SMTP_Server]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$smtpserver</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[_globals::SMTP_Account]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$smtpaccount</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[_globals::SMTP_Pass]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$smtppass</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["survey@mcservices.com"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$from</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $param ; "to" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$to</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["Survey Results"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$subject</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Build the MIME message - SMTP needs CR+LF line endings</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>With a logo: multipart/related holding the text+HTML alternatives plus the image. Without: text+HTML only.</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  alt = "MCS_ALT_BOUNDARY" ;
+  rel = "MCS_REL_BOUNDARY" ;
+  headers =
+   "From: MC Services Survey <" & $from & ">" & ¶ &
+   "To: " & $to & ¶ &
+   "Reply-To: info@mcservices.com" & ¶ &
+   "Subject: " & $subject & ¶ &
+   "MIME-Version: 1.0" & ¶ ;
+  alternatives =
+   "--" & alt & ¶ &
+   "Content-Type: text/plain; charset=UTF-8" & ¶ &
+   "Content-Transfer-Encoding: 8bit" & ¶ & ¶ &
+   $textBody & ¶ & ¶ &
+   "--" & alt & ¶ &
+   "Content-Type: text/html; charset=UTF-8" & ¶ &
+   "Content-Transfer-Encoding: 8bit" & ¶ & ¶ &
+   $html & ¶ & ¶ &
+   "--" & alt & "--" & ¶ ;
+  msg =
+   If ( $hasLogo ;
+     headers &
+     "Content-Type: multipart/related; boundary=\"" & rel & "\"" & ¶ & ¶ &
+     "--" & rel & ¶ &
+     "Content-Type: multipart/alternative; boundary=\"" & alt & "\"" & ¶ & ¶ &
+     alternatives & ¶ &
+     "--" & rel & ¶ &
+     "Content-Type: " & $logoMime & "; name=\"" & $logoFile & "\"" & ¶ &
+     "Content-Transfer-Encoding: base64" & ¶ &
+     "Content-ID: <mcslogo>" & ¶ &
+     "Content-Disposition: inline; filename=\"" & $logoFile & "\"" & ¶ & ¶ &
+     $logoBase64 & ¶ &
+     "--" & rel & "--" & ¶ ;
+     headers &
+     "Content-Type: multipart/alternative; boundary=\"" & alt & "\"" & ¶ & ¶ &
+     alternatives
+   )
+] ;
+  Substitute ( msg ; ¶ ; Char ( 13 ) & Char ( 10 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$message</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Stop early with a clear message if anything needed is missing</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $to )]]></Calculation>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "ok" ; 0 ; JSONNumber ] ;
+  [ "error" ; "No recipient email address was passed to the server script." ; JSONString ]
+)]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $smtpserver ) or IsEmpty ( $smtpaccount ) or IsEmpty ( $smtppass )]]></Calculation>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "ok" ; 0 ; JSONNumber ] ;
+  [ "error" ; "The mail settings in _globals are empty on the server. Open the file locally, enter them, close it and upload it again." ; JSONString ]
+)]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Bcc copies go to duane@ and sales@ - recipients without a To/Cc header are blind copies</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--mail-from " & Quote ( $from ) &
+" --mail-rcpt " & Quote ( $to ) &
+" --mail-rcpt " & Quote ( "duane@mcservices.com" ) &
+" --mail-rcpt " & Quote ( "sales@mcservices.com" ) &
+" --user " & Quote ( $smtpaccount & ":" & $smtppass ) &
+" --ssl-reqd" &
+" --upload-file $message"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Send - port 587 is STARTTLS, so smtp:// plus --ssl-reqd</Text>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="False"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["smtp://" & $smtpserver & ":587"]]></Calculation>
+    <Text/>
+    <Field>$result</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $error ) or GetValue ( $error ; 1 ) <> 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "ok" ; 0 ; JSONNumber ] ;
+  [ "error" ; "Could not send the survey results to " & $to & ". FileMaker error: " & If ( IsEmpty ( $error ) ; "(not captured)" ; GetValue ( $error ; 1 ) ) ; JSONString ] ;
+  [ "detail" ; GetValue ( $error ; 2 ) ; JSONString ]
+)]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[JSONSetElement ( "{}" ; [ "ok" ; 1 ; JSONNumber ] )]]></Calculation>
+  </Step>
+</fmxmlsnippet>
