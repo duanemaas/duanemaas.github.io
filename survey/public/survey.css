@@ -1,0 +1,27 @@
+.status { color: var(--muted); }
+.status.error { color: #b42318; }
+.status.ok { color: #067647; }
+
+.question { margin-bottom: 20px; }
+.question label { display: block; font-weight: 600; margin-bottom: 6px; }
+.question input,
+.question select,
+.question textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.question textarea { min-height: 96px; resize: vertical; }
+
+button.btn { border: none; cursor: pointer; font: inherit; }
+.btn-secondary { margin-bottom: 16px; }
+
+.table-wrap { overflow-x: auto; }
+#responses-table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+#responses-table th,
+#responses-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+#responses-table th { background: var(--card-bg); }

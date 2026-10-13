@@ -1,0 +1,14 @@
+{
+  "name": "cyber-security-survey",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local survey app for the Cyber Security Project, backed by FileMaker Server's Data API.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "check": "node --env-file=.env check.js"
+  }
+}
