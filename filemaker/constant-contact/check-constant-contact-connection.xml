@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PURPOSE: Check the Constant Contact v3 API connection with Insert from URL (cURL). Replaces the plug-in install/registration check.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>RESULT: $$PluginStatus = 1 when the API answers, 0 when it does not. $$Result holds the account summary JSON.</Text>
+  </Step>
+  <Step enable="True" id="85" name="Allow User Abort">
+    <Set state="False"/>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="1" name="Perform Script">
+    <Script id="397" name="Generic/Modular - Name Window"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Settings - four text fields on CONSTANTC hold the API key, secret and tokens</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetField ( "CONSTANTC::CC_ClientID" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$clientID</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetField ( "CONSTANTC::CC_ClientSecret" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$clientSecret</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetField ( "CONSTANTC::CC_AccessToken" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$accessToken</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetField ( "CONSTANTC::CC_RefreshToken" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$refreshToken</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$PluginStatus</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $clientID ) or IsEmpty ( $clientSecret ) or IsEmpty ( $refreshToken )]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Constant Contact is not set up in this file. The API key, client secret and refresh token must be entered before continuing."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[0]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Ask for the account summary. On 401 the access token has expired: refresh it once and ask again.</Text>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request GET" &
+" --header " & Quote ( "Authorization: Bearer " & $accessToken ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="False"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://api.cc.email/v3/account/summary"]]></Calculation>
+    <Text/>
+    <Field>$result</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$httpCode <> 401 or $refreshed]]></Calculation>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Refresh the access token</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["grant_type=refresh_token&refresh_token=" & GetAsURLEncoded ( $refreshToken )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$body</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request POST" &
+" --header " & Quote ( "Authorization: Basic " & Base64EncodeRFC ( 4648 ; $clientID & ":" & $clientSecret ) ) &
+" --header " & Quote ( "Content-Type: application/x-www-form-urlencoded" ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --data @$body" &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="False"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://authz.constantcontact.com/oauth2/default/v1/token"]]></Calculation>
+    <Text/>
+    <Field>$tokenJSON</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $tokenJSON ; "access_token" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$newAccessToken</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or IsEmpty ( $newAccessToken ) or Left ( $newAccessToken ; 1 ) = "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Unable to refresh the Constant Contact access token. The account may need to be authorized again." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"Server said: " & $tokenJSON]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[0]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Constant Contact replaces the refresh token on every use, so save both tokens</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$newAccessToken]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$accessToken</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( new = JSONGetElement ( $tokenJSON ; "refresh_token" ) ; If ( IsEmpty ( new ) ; $refreshToken ; new ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$refreshToken</Name>
+  </Step>
+  <Step enable="True" id="147" name="Set Field By Name">
+    <Result>
+      <Calculation><![CDATA[$accessToken]]></Calculation>
+    </Result>
+    <TargetName>
+      <Calculation><![CDATA["CONSTANTC::CC_AccessToken"]]></Calculation>
+    </TargetName>
+  </Step>
+  <Step enable="True" id="147" name="Set Field By Name">
+    <Result>
+      <Calculation><![CDATA[$refreshToken]]></Calculation>
+    </Result>
+    <TargetName>
+      <Calculation><![CDATA["CONSTANTC::CC_RefreshToken"]]></Calculation>
+    </TargetName>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="False"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$refreshed</Name>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Trap for errors</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or $httpCode <> 200]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Unable to connect to Constant Contact." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & $result]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[0]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$result]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$Result</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$$PluginStatus</Name>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[1]]></Calculation>
+  </Step>
+</fmxmlsnippet>

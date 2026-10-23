@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PURPOSE: Import Constant Contact lists and their subscribers using the v3 API with Insert from URL (cURL). Replaces the plug-in version.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Run Check Constant Contact Connection first so the access token is current. Can start on any layout.</Text>
+  </Step>
+  <Step enable="True" id="85" name="Allow User Abort">
+    <Set state="False"/>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( LayoutName )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Layout</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ExecuteSQL ( "SELECT \"CC_AccessToken\" FROM \"CONSTANTC\" WHERE \"CC_AccessToken\" IS NOT NULL" ; "" ; "" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$accessToken</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request GET" &
+" --header " & Quote ( "Authorization: Bearer " & GetValue ( $accessToken ; 1 ) ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Get every list in one request (1000 is the most Constant Contact returns per page)</Text>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="True"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://api.cc.email/v3/contact_lists?limit=1000"]]></Calculation>
+    <Text/>
+    <Field>$listsJSON</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or $httpCode <> 200]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Unable to get the lists from Constant Contact." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & Left ( $listsJSON ; 500 )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[0]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ValueCount ( JSONListKeys ( $listsJSON ; "lists" ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$listCount</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Counter</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>One pass per list</Text>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$Counter >= $listCount]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $listsJSON ; "lists[" & $Counter & "].list_id" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListID</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $listsJSON ; "lists[" & $Counter & "].name" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListName</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Counter + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Counter</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$NewSubscribers</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$RemovedSubscribers</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Subscribers</Name>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="465" name="CCLIST"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CCLIST" id="29" name="_fk_ConstantContactListID"/>
+          <Text>==$ListID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) = 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="7" name="New Record/Request"/>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListID]]></Calculation>
+    <Field table="CCLIST" id="29" name="_fk_ConstantContactListID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListName]]></Calculation>
+    <Field table="CCLIST" id="30" name="List Name"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Set Subscriber List - members come 500 per page; a new page is fetched whenever the current one runs out</Text>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["https://api.cc.email/v3/contacts?limit=500&lists=" & $ListID]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$memberURL</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Counter2</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$memberCount</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$Counter2 >= $memberCount]]></Calculation>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[IsEmpty ( $memberURL )]]></Calculation>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="True"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA[$memberURL]]></Calculation>
+    <Text/>
+    <Field>$membersJSON</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or $httpCode <> 200]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ValueCount ( JSONListKeys ( $membersJSON ; "contacts" ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$memberCount</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Counter2</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( next = JSONGetElement ( $membersJSON ; "_links.next.href" ) ; If ( IsEmpty ( next ) ; "" ; "https://api.cc.email" & next ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$memberURL</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$Counter2 < $memberCount]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $membersJSON ; "contacts[" & $Counter2 & "].contact_id" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ContactID</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Counter2 + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Counter2</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Subscribers ; $ContactID )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Subscribers</Name>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="2" name="_fk_ContactID"/>
+          <Text>==$ContactID</Text>
+        </Criteria>
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Text>==$ListID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) = 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="7" name="New Record/Request"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$NewSubscribers + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$NewSubscribers</Name>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ContactID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="2" name="_fk_ContactID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[ccsubscriber_CCLIST::flag_StatusList = 1]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Contacts status changed to \"" & $ListName & "\""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Contact Subscribed to List \"" & $ListName & "\""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Remove subscribers no longer on the list - only when the whole member list was read, otherwise good records would be deleted</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$Subscribers]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="9" name="_g_ContactList"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="10" name="_g_ListID"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="74" name="Go to Related Record">
+    <Option state="False"/>
+    <MatchAllRecords state="False"/>
+    <ShowInNewWindow state="False"/>
+    <Restore state="True"/>
+    <LayoutDestination value="SelectedLayout"/>
+    <NewWndStyles Style="Document" Close="Yes" Minimize="Yes" Maximize="Yes" Resize="Yes" Styles="3606018"/>
+    <Table id="1065890" name="ccsubscriber_CCSUBSCRIBERcontacts"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( LastError )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$relatedError</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$relatedError = 0 and Get ( FoundCount ) ≠ 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <RowPageLocation value="First"/>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[Get ( FoundCount ) = 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[ccsubscriber_CCLIST::flag_StatusList = 1]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Contact Changed their status from \"" & $ListName & "\""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Contact unSubscribed from List \"" & $ListName & "\""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Deleting moves to the next record by itself. Only step forward when a record could not be deleted.</Text>
+  </Step>
+  <Step enable="True" id="9" name="Delete Record/Request">
+    <NoInteract state="True"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( LastError ) = 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$RemovedSubscribers + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$RemovedSubscribers</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <Exit state="True"/>
+    <RowPageLocation value="Next"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="465" name="CCLIST"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[If( $NewSubscribers = 0 and $RemovedSubscribers = 0 ; CCLIST::ListLog ; Get(CurrentTimestamp) & " | " & $NewSubscribers & " were added and " & $RemovedSubscribers & " were removed." )]]></Calculation>
+    <Field table="CCLIST" id="40" name="ListLog"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="LayoutNameByCalc"/>
+    <Layout>
+      <Calculation><![CDATA[$Layout]]></Calculation>
+    </Layout>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["The list import stopped early while reading the subscribers of \"" & $ListName & "\". Nothing was removed from that list." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & Left ( $membersJSON ; 500 )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[0]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[1]]></Calculation>
+  </Step>
+</fmxmlsnippet>

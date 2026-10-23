@@ -1,0 +1,9 @@
+{
+	"version": 1,
+	"files": {
+		"Social Media Manager": {
+			"target": "fmnet://lando.mcservices.com/Social Media Manager"
+		}
+	},
+	"apps": {}
+}
