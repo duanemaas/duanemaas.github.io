@@ -1,0 +1,1170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PURPOSE: Push the aACE ERP and SalesTrackR checkboxes on CONTACTS to the matching Constant Contact lists.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Checked and not on the list: added (the contact is created in Constant Contact first if it is not linked yet). Unchecked but on the list: removed.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Contacts with CC_Unsubscribed = 1 are never added. Start on a CONSTANTC layout. Run the two imports first (Sync Constant Contact does all three in order).</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Parameter "silent" skips the summary dialog. RETURNS JSON: created, added, removed, skipped, ok.</Text>
+  </Step>
+  <Step enable="True" id="85" name="Allow User Abort">
+    <Set state="False"/>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( LayoutName )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Layout</Name>
+  </Step>
+  <Step enable="True" id="1" name="Perform Script">
+    <Script id="0" name="Check Constant Contact Connection"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$$PluginStatus <> 1]]></Calculation>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[JSONSetElement ( "{}" ; "ok" ; 0 ; JSONNumber )]]></Calculation>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( ExecuteSQL ( "SELECT \"CC_AccessToken\" FROM \"CONSTANTC\" WHERE \"CC_AccessToken\" IS NOT NULL" ; "" ; "" ) ; 1 )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$accessToken</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>List name in Constant Contact, and the CONTACTS checkbox field that goes with it - same order in both</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["aACE ERP" & ¶ & "SalesTrackR"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$lists</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["is_aACE ERP" & ¶ & "is_SalesTrackR"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$fields</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Created</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Added</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Removed</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[False]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$n</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>One pass per list</Text>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$n + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$n</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$n > ValueCount ( $lists ) or $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $lists ; $n )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListName</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $fields ; $n )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Field</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( ExecuteSQL ( "SELECT \"_fk_ConstantContactListID\" FROM \"CCLIST\" WHERE \"List Name\" = ?" ; "" ; "" ; $ListName ) ; 1 )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListID</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $ListID ) or $ListID = "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Skipped ; "List \"" & $ListName & "\" is not in CCLIST yet - run Import Constant Contact Lists" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>1. Checked contacts not in Constant Contact yet: create them there, already on this list, and link them</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ExecuteSQL ( "SELECT \"__pk_Contact ID\" FROM \"CONTACTS\" WHERE \"" & $Field & "\" = 1 AND ( \"CC_Unsubscribed\" IS NULL OR \"CC_Unsubscribed\" <> 1 ) AND \"_fk_ConstantContactID\" IS NULL" ; "" ; "" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$newPKs</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$newPKs = "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Could not read the checked contacts for the list \"" & $ListName & "\"." & ¶ &
+"Check that CONTACTS has the fields \"" & $Field & "\" and \"CC_Unsubscribed\" (number fields, 1 = yes)." & ¶ &
+"Nothing was changed for this list."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$k + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$failed or $k > ValueCount ( $newPKs )]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $newPKs ; $k )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$pk</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Pass a numeric key to SQL as a number, so the comparison works whether the key field is number or text</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[If ( GetAsText ( GetAsNumber ( $pk ) ) = $pk ; GetAsNumber ( $pk ) ; $pk )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$pkArg</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( r = ExecuteSQL ( "SELECT \"Name First\", \"Name Last\" FROM \"CONTACTS\" WHERE \"__pk_Contact ID\" = ?" ; ¶ ; "" ; $pkArg ) ; If ( r = "?" ; "" ; r ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$name</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Prefer the address already marked as the Constant Contact email, then any email</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  q = "SELECT \"Information\" FROM \"CONTACTINFO\" WHERE \"_fk_Entity_ID\" = ? AND \"Type\" = 'E-Mail' AND \"Information\" LIKE '%@%'" ;
+  flagged = GetValue ( ExecuteSQL ( q & " AND \"flag_ConstantContactEmail\" = 1" ; "" ; "" ; $pkArg ) ; 1 ) ;
+  any = GetValue ( ExecuteSQL ( q ; "" ; "" ; $pkArg ) ; 1 )
+] ;
+  Trim ( If ( not IsEmpty ( flagged ) and flagged <> "?" ; flagged ; If ( any = "?" ; "" ; any ) ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$email</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[IsEmpty ( $email )]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Skipped ; Trim ( Substitute ( $name ; ¶ ; " " ) ) & " - no email address, not added to " & $ListName )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "email_address.address" ; $email ; JSONString ] ;
+  [ "email_address.permission_to_send" ; "implicit" ; JSONString ] ;
+  [ "first_name" ; Left ( GetValue ( $name ; 1 ) ; 50 ) ; JSONString ] ;
+  [ "last_name" ; Left ( GetValue ( $name ; 2 ) ; 50 ) ; JSONString ] ;
+  [ "create_source" ; "Account" ; JSONString ] ;
+  [ "list_memberships[0]" ; $ListID ; JSONString ]
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$body</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request POST" &
+" --header " & Quote ( "Authorization: Bearer " & $accessToken ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --header " & Quote ( "Content-Type: application/json" ) &
+" --data @$body" &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="True"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://api.cc.email/v3/contacts"]]></Calculation>
+    <Text/>
+    <Field>$response</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) = 0 and $httpCode = 201]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONGetElement ( $response ; "contact_id" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ContactID</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Created + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Created</Name>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="304" name="CONTACTS"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CONTACTS" id="1" name="__pk_Contact ID"/>
+          <Text>==$pk</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) ≠ 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ContactID]]></Calculation>
+    <Field table="CONTACTS" id="39" name="_fk_ConstantContactID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[CONTACTS::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Created in Constant Contact on list \"" & $ListName & "\" (" & $email & ")"]]></Calculation>
+    <Field table="CONTACTS" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="7" name="New Record/Request"/>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ContactID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="2" name="_fk_ContactID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>409 = that email is already in Constant Contact (maybe unsubscribed). Import Constant Contact Contacts links it; it is never forced in.</Text>
+  </Step>
+  <Step enable="True" id="125" name="Else If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) = 0 and $httpCode >= 400 and $httpCode < 500 and $httpCode <> 401]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Skipped ; $email & " - " & If ( $httpCode = 409 ; "already in Constant Contact, run Import Constant Contact Contacts to link it" ; "refused by Constant Contact: " & Left ( JSONGetElement ( $response ; "[0].error_message" ) ; 150 ) ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Could not create " & $email & " in Constant Contact." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & Left ( $response ; 500 )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>2. Checked, linked contacts not on the list yet: add them</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ExecuteSQL ( "SELECT DISTINCT \"_fk_ConstantContactID\" FROM \"CONTACTS\" WHERE \"" & $Field & "\" = 1 AND ( \"CC_Unsubscribed\" IS NULL OR \"CC_Unsubscribed\" <> 1 ) AND \"_fk_ConstantContactID\" IS NOT NULL AND \"_fk_ConstantContactID\" NOT IN ( SELECT \"_fk_ContactID\" FROM \"CCSUBSCRIBER\" WHERE \"_fk_ListID\" = ? AND \"_fk_ContactID\" IS NOT NULL )" ; "" ; "" ; $ListID )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ids</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ids = "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Could not read the contacts to add for the list \"" & $ListName & "\"." & ¶ &
+"Check that CONTACTS has the fields \"" & $Field & "\" and \"CC_Unsubscribed\" (number fields, 1 = yes)." & ¶ &
+"Nothing was changed for this list."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ValueCount ( $ids )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$total</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$start</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$start > $total or $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( c = MiddleValues ( $ids ; $start ; 500 ) ; If ( Right ( c ; 1 ) = ¶ ; Left ( c ; Length ( c ) - 1 ) ; c ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$chunk</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$start + 500]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$start</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["{\"source\":{\"contact_ids\":[\"" & Substitute ( $chunk ; ¶ ; "\",\"" ) & "\"]},\"list_ids\":[\"" & $ListID & "\"]}"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$body</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request POST" &
+" --header " & Quote ( "Authorization: Bearer " & $accessToken ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --header " & Quote ( "Content-Type: application/json" ) &
+" --data @$body" &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="True"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://api.cc.email/v3/activities/add_list_memberships"]]></Calculation>
+    <Text/>
+    <Field>$response</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or $httpCode < 200 or $httpCode > 299]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Constant Contact would not add contacts to the list \"" & $ListName & "\". FileMaker was not changed for those contacts." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & Left ( $response ; 500 )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$k + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$k > ValueCount ( $chunk )]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $chunk ; $k )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$id</Name>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="7" name="New Record/Request"/>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$id]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="2" name="_fk_ContactID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[$ListID]]></Calculation>
+    <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Added to list \"" & $ListName & "\" from FileMaker"]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Added + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Added</Name>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>3. Linked contacts on the list whose box is unchecked: remove them. Contacts not linked in FileMaker are left alone.</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ExecuteSQL ( "SELECT DISTINCT \"_fk_ContactID\" FROM \"CCSUBSCRIBER\" WHERE \"_fk_ListID\" = ? AND \"_fk_ContactID\" IN ( SELECT \"_fk_ConstantContactID\" FROM \"CONTACTS\" WHERE \"_fk_ConstantContactID\" IS NOT NULL ) AND \"_fk_ContactID\" NOT IN ( SELECT \"_fk_ConstantContactID\" FROM \"CONTACTS\" WHERE \"" & $Field & "\" = 1 AND \"_fk_ConstantContactID\" IS NOT NULL )" ; "" ; "" ; $ListID )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ids</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ids = "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Could not read the contacts to remove for the list \"" & $ListName & "\"." & ¶ &
+"Check that CONTACTS has the fields \"" & $Field & "\" and \"CC_Unsubscribed\" (number fields, 1 = yes)." & ¶ &
+"Nothing was changed for this list."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Safety check: a big removal usually means the boxes were never filled in, not that many people were unchecked</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[ValueCount ( $ids ) > 25 and Get ( SystemPlatform ) <> 4]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["About to remove " & ValueCount ( $ids ) & " contacts from the list \"" & $ListName & "\" because their " & $Field & " box is not checked." & ¶ & ¶ &
+"If the boxes have not been filled in yet, choose Skip and run Check Boxes for Constant Contact Lists first."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["Skip"]]></Calculation>
+      </Button>
+      <Button CommitState="True">
+        <Calculation><![CDATA["Remove"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( LastMessageChoice ) <> 2]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Skipped ; "Removal of " & ValueCount ( $ids ) & " contacts from " & $ListName & " was skipped" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ids</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="125" name="Else If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[ValueCount ( $ids ) > 25]]></Calculation>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>No one to ask on the server - do not remove that many unattended</Text>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( $Skipped ; "Removal of " & ValueCount ( $ids ) & " contacts from " & $ListName & " needs a person to confirm" )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Skipped</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[""]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ids</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[ValueCount ( $ids )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$total</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$start</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$start > $total or $failed]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( c = MiddleValues ( $ids ; $start ; 500 ) ; If ( Right ( c ; 1 ) = ¶ ; Left ( c ; Length ( c ) - 1 ) ; c ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$chunk</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$start + 500]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$start</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["{\"source\":{\"contact_ids\":[\"" & Substitute ( $chunk ; ¶ ; "\",\"" ) & "\"]},\"list_ids\":[\"" & $ListID & "\"]}"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$body</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["--request POST" &
+" --header " & Quote ( "Authorization: Bearer " & $accessToken ) &
+" --header " & Quote ( "Accept: application/json" ) &
+" --header " & Quote ( "Content-Type: application/json" ) &
+" --data @$body" &
+" --dump-header $headers"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$curl</Name>
+  </Step>
+  <Step enable="True" id="160" name="Insert from URL">
+    <NoInteract state="True"/>
+    <DontEncodeURL state="True"/>
+    <SelectAll state="True"/>
+    <VerifySSLCertificates state="True"/>
+    <CURLOptions>
+      <Calculation><![CDATA[$curl]]></Calculation>
+    </CURLOptions>
+    <Calculation><![CDATA["https://api.cc.email/v3/activities/remove_list_memberships"]]></Calculation>
+    <Text/>
+    <Field>$response</Field>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[List ( Get ( LastError ) ; Get ( LastExternalErrorDetail ) )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$error</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Let ( [
+  pos = Position ( $headers ; "HTTP/" ; Length ( $headers ) ; -1 ) ;
+  line = Middle ( $headers ; pos ; 40 ) ;
+  sp = Position ( line ; " " ; 1 ; 1 )
+] ;
+  GetAsNumber ( Middle ( line ; sp + 1 ; 3 ) )
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$httpCode</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[GetValue ( $error ; 1 ) <> 0 or $httpCode < 200 or $httpCode > 299]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[True]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$failed</Name>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Constant Contact would not remove contacts from the list \"" & $ListName & "\". FileMaker was not changed for those contacts." & ¶ &
+"FileMaker error: " & GetValue ( $error ; 1 ) & " " & GetValue ( $error ; 2 ) & ¶ &
+"HTTP status: " & $httpCode & ¶ &
+"Server said: " & Left ( $response ; 500 )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="69" name="Else">
+    <Restore state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$k + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$k</Name>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[$k > ValueCount ( $chunk )]]></Calculation>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( $chunk ; $k )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$id</Name>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="2" name="_fk_ContactID"/>
+          <Text>==$id</Text>
+        </Criteria>
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Text>==$ListID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) ≠ 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
+Get ( CurrentTimestamp ) & " | " & "Removed from list \"" & $ListName & "\" from FileMaker"]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Removed + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Removed</Name>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[Get ( FoundCount ) = 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="9" name="Delete Record/Request">
+    <NoInteract state="True"/>
+  </Step>
+  <Step enable="True" id="72" name="Exit Loop If">
+    <Calculation><![CDATA[Get ( LastError ) <> 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="LayoutNameByCalc"/>
+    <Layout>
+      <Calculation><![CDATA[$Layout]]></Calculation>
+    </Layout>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[JSONSetElement ( "{}" ;
+  [ "ok" ; If ( $failed ; 0 ; 1 ) ; JSONNumber ] ;
+  [ "created" ; $Created ; JSONNumber ] ;
+  [ "added" ; $Added ; JSONNumber ] ;
+  [ "removed" ; $Removed ; JSONNumber ] ;
+  [ "skipped" ; $Skipped ; JSONString ]
+)]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$result</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( ScriptParameter ) <> "silent"]]></Calculation>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA["Created in Constant Contact: " & $Created & ¶ &
+"Added to a list: " & $Added & ¶ &
+"Removed from a list: " & $Removed &
+If ( not IsEmpty ( $Skipped ) ; ¶ & ¶ & "Not done:" & ¶ & $Skipped )]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[$result]]></Calculation>
+  </Step>
+</fmxmlsnippet>

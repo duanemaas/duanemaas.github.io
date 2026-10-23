@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmxmlsnippet type="FMObjectList">
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>PURPOSE: One time. Check the aACE ERP / SalesTrackR box for every linked contact already on that list in CCLIST/CCSUBSCRIBER.</Text>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Run it once, after Import Constant Contact Lists and before the first Push, if the lists were imported before the boxes existed. It only checks boxes, never clears them.</Text>
+  </Step>
+  <Step enable="True" id="85" name="Allow User Abort">
+    <Set state="False"/>
+  </Step>
+  <Step enable="True" id="86" name="Set Error Capture">
+    <Set state="True"/>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[Get ( LayoutName )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Layout</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[0]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Checked</Name>
+  </Step>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["aACE ERP"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListName</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( ExecuteSQL ( "SELECT \"_fk_ConstantContactListID\" FROM \"CCLIST\" WHERE \"List Name\" = ?" ; "" ; "" ; $ListName ) ; 1 )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListID</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not IsEmpty ( $ListID ) and $ListID <> "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Text>==$ListID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) ≠ 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <RowPageLocation value="First"/>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not IsEmpty ( ccsubscriber_CONTACT::_fk_ConstantContactID ) and not GetAsBoolean ( ccsubscriber_CONTACT::is_aACE ERP )]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[1]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_aACE ERP"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Checked + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Checked</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <Exit state="True"/>
+    <RowPageLocation value="Next"/>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA["SalesTrackR"]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListName</Name>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[GetValue ( ExecuteSQL ( "SELECT \"_fk_ConstantContactListID\" FROM \"CCLIST\" WHERE \"List Name\" = ?" ; "" ; "" ; $ListName ) ; 1 )]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$ListID</Name>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not IsEmpty ( $ListID ) and $ListID <> "?"]]></Calculation>
+  </Step>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="SelectedLayout"/>
+    <Layout id="475" name="CCSUBSCRIBER"/>
+  </Step>
+  <Step enable="True" id="28" name="Perform Find">
+    <Restore state="True"/>
+    <Query>
+      <RequestRow operation="Include">
+        <Criteria>
+          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Text>==$ListID</Text>
+        </Criteria>
+      </RequestRow>
+    </Query>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[Get ( FoundCount ) ≠ 0]]></Calculation>
+  </Step>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <RowPageLocation value="First"/>
+  </Step>
+  <Step enable="True" id="71" name="Loop">
+    <Restore state="False"/>
+    <FlushType value="Always"/>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[not IsEmpty ( ccsubscriber_CONTACT::_fk_ConstantContactID ) and not GetAsBoolean ( ccsubscriber_CONTACT::is_SalesTrackR )]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[1]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_SalesTrackR"/>
+  </Step>
+  <Step enable="True" id="75" name="Commit Records/Requests">
+    <NoInteract state="True"/>
+    <Option state="True"/>
+    <ESSForceCommit state="False"/>
+  </Step>
+  <Step enable="True" id="141" name="Set Variable">
+    <Value>
+      <Calculation><![CDATA[$Checked + 1]]></Calculation>
+    </Value>
+    <Repetition>
+      <Calculation><![CDATA[1]]></Calculation>
+    </Repetition>
+    <Name>$Checked</Name>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="16" name="Go to Record/Request/Page">
+    <NoInteract state="False"/>
+    <Exit state="True"/>
+    <RowPageLocation value="Next"/>
+  </Step>
+  <Step enable="True" id="73" name="End Loop"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)"/>
+  <Step enable="True" id="6" name="Go to Layout">
+    <LayoutDestination value="LayoutNameByCalc"/>
+    <Layout>
+      <Calculation><![CDATA[$Layout]]></Calculation>
+    </Layout>
+  </Step>
+  <Step enable="True" id="87" name="Show Custom Dialog">
+    <Title>
+      <Calculation><![CDATA["Constant Contact"]]></Calculation>
+    </Title>
+    <Message>
+      <Calculation><![CDATA[$Checked & " boxes were checked."]]></Calculation>
+    </Message>
+    <Buttons>
+      <Button CommitState="True">
+        <Calculation><![CDATA["OK"]]></Calculation>
+      </Button>
+      <Button CommitState="False"/>
+      <Button CommitState="False"/>
+    </Buttons>
+  </Step>
+  <Step enable="True" id="103" name="Exit Script">
+    <Calculation><![CDATA[$Checked]]></Calculation>
+  </Step>
+</fmxmlsnippet>

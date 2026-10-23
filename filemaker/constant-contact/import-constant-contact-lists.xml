@@ -411,6 +411,26 @@
     <Calculation><![CDATA[$ListID]]></Calculation>
     <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
   </Step>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Keep the matching CONTACTS box in step with this list</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ListName = "aACE ERP"]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[1]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_aACE ERP"/>
+  </Step>
+  <Step enable="True" id="125" name="Else If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ListName = "SalesTrackR"]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[1]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_SalesTrackR"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
   <Step enable="True" id="68" name="If">
     <Restore state="False"/>
     <Calculation><![CDATA[ccsubscriber_CCLIST::flag_StatusList = 1]]></Calculation>
@@ -503,6 +523,26 @@ Get ( CurrentTimestamp ) & " | " & "Contact Changed their status from \"" & $Lis
     <Calculation><![CDATA[ccsubscriber_CONTACT::CC_ChangeLog & ¶ &
 Get ( CurrentTimestamp ) & " | " & "Contact unSubscribed from List \"" & $ListName & "\""]]></Calculation>
     <Field table="ccsubscriber_CONTACT" id="51" name="CC_ChangeLog"/>
+  </Step>
+  <Step enable="True" id="70" name="End If"/>
+  <Step enable="True" id="89" name="# (comment)">
+    <Text>Taken off this list in Constant Contact: clear the matching CONTACTS box (unsubscribed contacts keep theirs)</Text>
+  </Step>
+  <Step enable="True" id="68" name="If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ListName = "aACE ERP" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribed )]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_aACE ERP"/>
+  </Step>
+  <Step enable="True" id="125" name="Else If">
+    <Restore state="False"/>
+    <Calculation><![CDATA[$ListName = "SalesTrackR" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribed )]]></Calculation>
+  </Step>
+  <Step enable="True" id="76" name="Set Field">
+    <Calculation><![CDATA[""]]></Calculation>
+    <Field table="ccsubscriber_CONTACT" id="0" name="is_SalesTrackR"/>
   </Step>
   <Step enable="True" id="70" name="End If"/>
   <Step enable="True" id="89" name="# (comment)">
