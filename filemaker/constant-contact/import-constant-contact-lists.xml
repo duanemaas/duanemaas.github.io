@@ -530,7 +530,7 @@ Get ( CurrentTimestamp ) & " | " & "Contact unSubscribed from List \"" & $ListNa
   </Step>
   <Step enable="True" id="68" name="If">
     <Restore state="False"/>
-    <Calculation><![CDATA[$ListName = "aACE ERP" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribed )]]></Calculation>
+    <Calculation><![CDATA[$ListName = "aACE ERP" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribe )]]></Calculation>
   </Step>
   <Step enable="True" id="76" name="Set Field">
     <Calculation><![CDATA[""]]></Calculation>
@@ -538,7 +538,7 @@ Get ( CurrentTimestamp ) & " | " & "Contact unSubscribed from List \"" & $ListNa
   </Step>
   <Step enable="True" id="125" name="Else If">
     <Restore state="False"/>
-    <Calculation><![CDATA[$ListName = "SalesTrackR" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribed )]]></Calculation>
+    <Calculation><![CDATA[$ListName = "SalesTrackR" and not GetAsBoolean ( ccsubscriber_CONTACT::CC_Unsubscribe )]]></Calculation>
   </Step>
   <Step enable="True" id="76" name="Set Field">
     <Calculation><![CDATA[""]]></Calculation>

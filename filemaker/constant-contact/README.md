@@ -31,7 +31,7 @@ in first, and then the push sends FileMaker's changes out.
 |---|---|---|
 | `is_aACE ERP` | Number, checkbox storing 1 | On the **aACE ERP** list |
 | `is_SalesTrackR` | Number, checkbox storing 1 | On the **SalesTrackR** list |
-| `CC_Unsubscribed` | Number, checkbox storing 1 | Unsubscribed in Constant Contact. Set by the import, never pushed back |
+| `CC_Unsubscribe` | Number, checkbox storing 1 | Unsubscribed in Constant Contact. Set by the import, never pushed back |
 
 If your field names differ, rename them in FileMaker or search and replace them
 in the XML before pasting. The list names **aACE ERP** and **SalesTrackR** must
@@ -52,7 +52,7 @@ sync". Each side's changes are measured against it:
 - **Added or removed in Constant Contact:** the list import creates or deletes
   the CCSUBSCRIBER row and checks or clears the box.
 - **Unsubscribed in Constant Contact:** the contacts import sets
-  `CC_Unsubscribed` and logs it in `CC_ChangeLog`. The boxes stay as they are,
+  `CC_Unsubscribe` and logs it in `CC_ChangeLog`. The boxes stay as they are,
   and the push never adds that person to a list again. If they opt back in
   through Constant Contact, the flag is cleared.
 - Contacts that are only in Constant Contact and not linked in FileMaker are
