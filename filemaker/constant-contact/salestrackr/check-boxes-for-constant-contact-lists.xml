@@ -56,14 +56,14 @@
   </Step>
   <Step enable="True" id="6" name="Go to Layout">
     <LayoutDestination value="SelectedLayout"/>
-    <Layout id="475" name="CCSUBSCRIBER"/>
+    <Layout id="0" name="CCSUBSCRIBER"/>
   </Step>
   <Step enable="True" id="28" name="Perform Find">
     <Restore state="True"/>
     <Query>
       <RequestRow operation="Include">
         <Criteria>
-          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Field table="CCSUBSCRIBER" id="0" name="_fk_ListID"/>
           <Text>==$ListID</Text>
         </Criteria>
       </RequestRow>
@@ -137,14 +137,14 @@
   </Step>
   <Step enable="True" id="6" name="Go to Layout">
     <LayoutDestination value="SelectedLayout"/>
-    <Layout id="475" name="CCSUBSCRIBER"/>
+    <Layout id="0" name="CCSUBSCRIBER"/>
   </Step>
   <Step enable="True" id="28" name="Perform Find">
     <Restore state="True"/>
     <Query>
       <RequestRow operation="Include">
         <Criteria>
-          <Field table="CCSUBSCRIBER" id="3" name="_fk_ListID"/>
+          <Field table="CCSUBSCRIBER" id="0" name="_fk_ListID"/>
           <Text>==$ListID</Text>
         </Criteria>
       </RequestRow>
